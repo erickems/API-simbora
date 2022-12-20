@@ -4,3 +4,18 @@
 ```
 $ npm install
 $ npm start
+```
+
+2. Abra o postman e digite
+```
+$ http://localhost:8080/<rota>
+```
+
+3. As rotas:
+```
+$ {GET} =  /clientes
+$ {GET} =  /estabelecimentos
+
+$ {POST} =  /criaCliente
+$ {POST} =  /criaEstabelecimento
+```
