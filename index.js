@@ -5,6 +5,8 @@ const Evento = require('./model/evento/Evento')
 const express = require('express')
 const app = express()
 const cors = require('cors')
+const bcrypt = require("bcrypt");
+const jwt = require("jsonwebtoken");
 
 app.use(cors())
 
@@ -30,25 +32,111 @@ app.get('/clientes', async(req, res) => {
 })
 
 app.post('/criaCliente', async(req, res) =>{
-    const {
+
+    let {
         nome,
         email,
         senha
     } = req.body
 
-    const cliente = {
+    if (!nome) {
+        return res.status(422).json({ msg: "O nome é obrigatório!" });
+    }
+    
+    if (!email) {
+        return res.status(422).json({ msg: "O email é obrigatório!" });
+    }
+
+    if (!senha) {
+        return res.status(422).json({ msg: "A senha é obrigatória!" });
+    }
+
+    const userExists = await Cliente.findOne({ email: email });
+
+    if (userExists) {
+        return res.status(422).json({ msg: "Por favor, utilize outro e-mail!" });
+    }
+    
+    const salt = await bcrypt.genSalt(12);
+    senha = await bcrypt.hash(senha, salt);
+
+    const cliente = new Cliente({
         nome,
         email,
         senha
-    }
+    })
 
-    try{
-        await Cliente.create(cliente)
-        res.status(201).json({message: 'Cliente criado com sucesso'})
-    }catch(error){
-        res.status(500).json({error: error})
+    try {
+        await Cliente.create(cliente);
+
+        res.status(201).json({ msg: "Cliente criado com sucesso!" });
+    } catch (error) {
+        res.status(500).json({ msg: error });
     }
 })
+
+app.post('/login', async(req, res) => {
+    const { email, senha } = req.body;
+
+  if (!email) {
+    return res.status(422).json({ msg: "O email é obrigatório!" });
+  }
+
+  if (!senha) {
+    return res.status(422).json({ msg: "A senha é obrigatória!" });
+  }
+
+  const cliente = await Cliente.findOne({ email: email });
+
+  if (!cliente) {
+    return res.status(404).json({ msg: "Cliente não encontrado!" });
+  }
+
+  const checkPassword = await bcrypt.compare(senha, cliente.senha);
+
+  if (!checkPassword) {
+    return res.status(422).json({ msg: "Senha inválida" });
+  }
+
+  try {
+    const secret = "HIOAHDIHOIhOHihasd0901jaa";
+
+    const token = jwt.sign({id: cliente._id,}, secret);
+
+    res.status(200).json({ msg: "Autenticação realizada com sucesso!", token });
+  } catch (error) {
+    res.status(500).json({ msg: error });
+  }
+})
+
+app.get("/cliente/:id", checkToken, async (req, res) => {
+    const id = req.params.id;
+  
+    const cliente = await Cliente.findById(id, "-senha");
+  
+    if (!cliente) {
+      return res.status(404).json({ msg: "Cliente não encontrado!" });
+    }
+  
+    res.status(200).json({ cliente });
+  });
+  
+  function checkToken(req, res, next) {
+    const authHeader = req.headers["authorization"];
+    const token = authHeader && authHeader.split(" ")[1];
+  
+    if (!token) return res.status(401).json({ msg: "Acesso negado!" });
+  
+    try {
+      const secret = "HIOAHDIHOIhOHihasd0901jaa";
+  
+      jwt.verify(token, secret);
+  
+      next();
+    } catch (err) {
+      res.status(400).json({ msg: "O Token é inválido!" });
+    }
+  }
 
 app.get('/estabelecimentos', async(req, res) => {
     try{
