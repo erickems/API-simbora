@@ -108,7 +108,7 @@ app.post('/login', async(req, res) => {
     res.status(500).json({ msg: error });
   }
 })
-
+  
 app.get("/cliente/:id", checkToken, async (req, res) => {
     const id = req.params.id;
   
