@@ -1,6 +1,7 @@
 require('./config/mongo.service.js')
 const Cliente = require('./model/cliente/Cliente')
 const Estabelecimento = require('./model/estabelecimento/Estabelecimento')
+const Evento = require('./model/evento/Evento')
 const express = require('express')
 const app = express()
 const cors = require('cors')
@@ -79,3 +80,59 @@ app.post('/criaEstabelecimento', async(req, res) =>{
         res.status(500).json({error: error})
     }
 })
+
+app.patch("/estabelecimentos/:id/eventos" ,async (req,res)=>{
+
+    const estaId =req.params.id
+    const evento = req.body
+    try {
+        const local = await Estabelecimento.findById(estaId)
+        const nEvento = await Evento.create(evento)
+        console.log(nEvento._id.valueOf())
+        console.log(local.eventos)
+       local.eventos.push(nEvento._id.valueOf())
+        console.log(local.eventos)
+        await Estabelecimento.findOneAndUpdate({_id : local._id.valueOf() } ,
+             {eventos : local.eventos})
+        res.send(201)
+    } catch (error) {
+        res.json(error)
+    }
+})
+
+
+app.post('/eventos', async(req,res)=>{
+
+    ///token do estabelecimento para recuperar 
+    //do banco e adicionar o id deste evento
+    const {nome,
+         horario,
+        promocoes,
+        atracoes} = req.body
+    
+    const evento = {nome,
+        horario,
+       promocoes,
+       atracoes}
+
+    try {
+        const e = await Evento.create(evento);
+
+        //_id: new ObjectId("63a22514079eb1fe38d02421"),
+        res.status(201).json({message: 'Evento criado com sucesso'})
+    }catch(error){
+        res.status(500).json({error: error})
+    }
+})
+
+app.get("/eventos/:id", async(req , res)=>{
+
+    console.log("--",req.params)
+    try{
+        const evento = await Evento.findById(req.params.id)
+        res.json(evento)
+    }catch(error){
+        console.log(error)
+        res.status(404)
+    }
+    })
