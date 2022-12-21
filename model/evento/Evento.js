@@ -4,6 +4,8 @@ const mongoose = restFull.mongoose
 const eventoSchema = new mongoose.Schema({
     nome : {type : String,required : true},
     horario : {type : Date, required : true},
-    interessados : {type : }
-
+    promocoes : {type : [String], required : true},
+    atracoes : {type : [String], required : true}
 })
+
+module.exports= mongoose.model('Evento',  eventoSchema)
