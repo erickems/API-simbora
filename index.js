@@ -6,7 +6,7 @@ const app = require('./expressConfig.js')
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 
-const port = 8080
+const port = process.env.PORT || 5000
 
 app.listen(port, () => {
     console.log(`API funfando na porta ${port}`)
