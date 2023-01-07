@@ -1,8 +1,14 @@
 const mongoose = require('mongoose')
+require('dotenv').config()
 
-mongoose.connect("mongodb+srv://erick:6pCPzGoRrz6bLtZL@apicluster.chdkhx1.mongodb.net/?retryWrites=true&w=majority")
+
+const DB_USER = process.env.DB_USER
+const DB_PASSWORD = process.env.DB_PASSWORD
+const DB_CLUSTER = process.env.DB_CLUSTER
+
+
+mongoose.set('strictQuery', false)
+
+mongoose.connect(`mongodb+srv://${DB_USER}:${DB_PASSWORD}@apicluster.${DB_CLUSTER}.mongodb.net/?retryWrites=true&w=majority`)
     .then(() =>{console.log('Conexão estabelecida com o MongoDB')
 })
-
-//mongosh "mongodb+srv://cluster0.jcd84pe.mongodb.net/simbora" --apiVersion 1 --username erick
-//"mongodb+srv://erick:6pCPzGoRrz6bLtZL@cluster0.jcd84pe.mongodb.net/?retryWrites=true&w=majority"
