@@ -2,16 +2,7 @@ require('./config/mongo.service.js')
 const Cliente = require('./model/cliente/Cliente')
 const Estabelecimento = require('./model/estabelecimento/Estabelecimento')
 const Evento = require('./model/evento/Evento')
-const express = require('express')
-const app = express()
-const cors = require('cors')
-
-app.use(cors())
-
-app.use(
-    express.urlencoded({extended:true}),
-    express.json(),
-)
+const app = require('./expressConfig.js')
 
 const port = 8080
 
@@ -136,3 +127,5 @@ app.get("/eventos/:id", async(req , res)=>{
         res.status(404)
     }
     })
+
+module.exports = app
