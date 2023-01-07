@@ -2,18 +2,9 @@ require('./config/mongo.service.js')
 const Cliente = require('./model/cliente/Cliente')
 const Estabelecimento = require('./model/estabelecimento/Estabelecimento')
 const Evento = require('./model/evento/Evento')
-const express = require('express')
-const app = express()
-const cors = require('cors')
+const app = require('./expressConfig.js')
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
-
-app.use(cors())
-
-app.use(
-    express.urlencoded({extended:true}),
-    express.json(),
-)
 
 const port = 8080
 
