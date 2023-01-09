@@ -15,8 +15,7 @@ app.listen(port, () => {
 app.get('/clientes', async(req, res) => {
     try{
         //não exibe a senha, apenas nome e email
-        const cliente = await Cliente.find()
-        //const cliente = await Cliente.find().select("-senha")
+        const cliente = await Cliente.find({}, {senha:0})
         res.status(200).json(cliente)
 
     }catch(error){
@@ -50,8 +49,8 @@ app.post('/criaCliente', async(req, res) =>{
         return res.status(422).json({ msg: "Por favor, utilize outro e-mail!" });
     }
 
-    var salt = bcrypt.genSaltSync(10);
-    var hash = bcrypt.hashSync(senha, salt);
+    var salt = await bcrypt.genSaltSync(10);
+    var hash = await bcrypt.hashSync(senha, salt);
 
     const cliente = new Cliente({
         nome,
@@ -85,7 +84,7 @@ app.post('/login', async(req, res) => {
     return res.status(404).json({ msg: "Cliente não encontrado!" });
   }
 
-  const checkPassword = bcrypt.compareSync(senha, cliente.senha);
+  const checkPassword = await bcrypt.compareSync(senha, cliente.senha);
 
   if (!checkPassword) {
     return res.status(422).json({ msg: "Senha inválida" });
@@ -104,8 +103,9 @@ app.post('/login', async(req, res) => {
 
 app.get("/cliente/:id", checkToken, async (req, res) => {
     const id = req.params.id;
-  
-    const cliente = await Cliente.findById(id, "-senha");
+    
+    //não exibe a senha, apenas nome e email
+    const cliente = await Cliente.findById(id, {}, {senha:0});
   
     if (!cliente) {
       return res.status(404).json({ msg: "Cliente não encontrado!" });
