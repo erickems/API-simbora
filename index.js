@@ -12,6 +12,15 @@ app.listen(port, () => {
     console.log(`API funfando na porta ${port}`)
 })
 
+app.get('/', async(req, res) => {
+    try{
+        res.status(200).json({status: "API funcionando nice and clear"})
+
+    }catch(error){
+        res.status(500).json({error: error})
+    }
+})
+
 app.get('/clientes', async(req, res) => {
     try{
         //não exibe a senha, apenas nome e email
@@ -49,8 +58,8 @@ app.post('/criaCliente', async(req, res) =>{
         return res.status(422).json({ msg: "Por favor, utilize outro e-mail!" });
     }
 
-    const salt = bcrypt.genSaltSync(10);
-    const hash = bcrypt.hashSync(senha, salt);
+    const salt = await bcrypt.genSaltSync(10);
+    const hash = await bcrypt.hashSync(senha, salt);
 
     const cliente = new Cliente({
         nome,
