@@ -3,10 +3,10 @@ const Cliente = require('./model/cliente/Cliente')
 const Estabelecimento = require('./model/estabelecimento/Estabelecimento')
 const Evento = require('./model/evento/Evento')
 const app = require('./expressConfig.js')
-const bcrypt = require("bcrypt");
+const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 
-const port = process.env.PORT || 5000
+const port = process.env.PORT || 5010
 
 app.listen(port, () => {
     console.log(`API funfando na porta ${port}`)
@@ -14,7 +14,8 @@ app.listen(port, () => {
 
 app.get('/clientes', async(req, res) => {
     try{
-        const cliente = await Cliente.find()
+        //não exibe a senha, apenas nome e email
+        const cliente = await Cliente.find().select("-senha")
         res.status(200).json(cliente)
 
     }catch(error){
