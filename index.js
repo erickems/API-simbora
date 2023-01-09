@@ -49,8 +49,8 @@ app.post('/criaCliente', async(req, res) =>{
         return res.status(422).json({ msg: "Por favor, utilize outro e-mail!" });
     }
 
-    var salt = await bcrypt.genSaltSync(10);
-    var hash = await bcrypt.hashSync(senha, salt);
+    const salt = bcrypt.genSaltSync(10);
+    const hash = bcrypt.hashSync(senha, salt);
 
     const cliente = new Cliente({
         nome,
@@ -78,13 +78,13 @@ app.post('/login', async(req, res) => {
     return res.status(422).json({ msg: "A senha é obrigatória!" });
   }
 
-  const cliente = await Cliente.findOne({ email: email });
+  const cliente = await Cliente.findOne({ email: email }).select("senha");
 
   if (!cliente) {
     return res.status(404).json({ msg: "Cliente não encontrado!" });
   }
-
-  const checkPassword = await bcrypt.compareSync(senha, cliente.senha);
+  
+  const checkPassword = bcrypt.compareSync(senha, cliente.senha);
 
   if (!checkPassword) {
     return res.status(422).json({ msg: "Senha inválida" });
