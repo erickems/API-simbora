@@ -64,7 +64,7 @@ app.post('/criaCliente', async(req, res) =>{
     const cliente = new Cliente({
         nome,
         email,
-        hash
+        senha : hash
     })
 
     try {
