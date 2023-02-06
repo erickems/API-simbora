@@ -2,28 +2,29 @@ require('./config/mongo.service.js')
 const Cliente = require('./model/cliente/Cliente')
 const Estabelecimento = require('./model/estabelecimento/Estabelecimento')
 const Evento = require('./model/evento/Evento')
-const express = require('express')
-const app = express()
-const cors = require('cors')
-const bcrypt = require("bcrypt");
+const app = require('./expressConfig.js')
+const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 
-app.use(cors())
-
-app.use(
-    express.urlencoded({extended:true}),
-    express.json(),
-)
-
-const port = 8090
+const port = process.env.PORT || 5010
 
 app.listen(port, () => {
     console.log(`API funfando na porta ${port}`)
 })
 
+app.get('/', async(req, res) => {
+    try{
+        res.status(200).json({status: "API funcionando nice and clear"})
+
+    }catch(error){
+        res.status(500).json({error: error})
+    }
+})
+
 app.get('/clientes', async(req, res) => {
     try{
-        const cliente = await Cliente.find()
+        //não exibe a senha, apenas nome e email
+        const cliente = await Cliente.find({}, {senha:0})
         res.status(200).json(cliente)
 
     }catch(error){
@@ -56,14 +57,14 @@ app.post('/criaCliente', async(req, res) =>{
     if (userExists) {
         return res.status(422).json({ msg: "Por favor, utilize outro e-mail!" });
     }
-    
-    const salt = await bcrypt.genSalt(12);
-    senha = await bcrypt.hash(senha, salt);
+
+    const salt = await bcrypt.genSaltSync(10);
+    const hash = await bcrypt.hashSync(senha, salt);
 
     const cliente = new Cliente({
         nome,
         email,
-        senha
+        senha : hash
     })
 
     try {
@@ -86,13 +87,13 @@ app.post('/login', async(req, res) => {
     return res.status(422).json({ msg: "A senha é obrigatória!" });
   }
 
-  const cliente = await Cliente.findOne({ email: email });
+  const cliente = await Cliente.findOne({ email: email }).select("senha");
 
   if (!cliente) {
     return res.status(404).json({ msg: "Cliente não encontrado!" });
   }
-
-  const checkPassword = await bcrypt.compare(senha, cliente.senha);
+  
+  const checkPassword = bcrypt.compareSync(senha, cliente.senha);
 
   if (!checkPassword) {
     return res.status(422).json({ msg: "Senha inválida" });
@@ -111,8 +112,9 @@ app.post('/login', async(req, res) => {
   
 app.get("/cliente/:id", checkToken, async (req, res) => {
     const id = req.params.id;
-  
-    const cliente = await Cliente.findById(id, "-senha");
+    
+    //não exibe a senha, apenas nome e email
+    const cliente = await Cliente.findById(id, {}, {senha:0});
   
     if (!cliente) {
       return res.status(404).json({ msg: "Cliente não encontrado!" });
@@ -246,3 +248,5 @@ app.get("/eventos/:id", async(req , res)=>{
         res.status(404)
     }
     })
+
+module.exports = app
