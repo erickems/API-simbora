@@ -109,7 +109,7 @@ app.post('/login', async(req, res) => {
     res.status(500).json({ msg: error });
   }
 })
-
+  
 app.get("/cliente/:id", checkToken, async (req, res) => {
     const id = req.params.id;
     
@@ -153,12 +153,14 @@ app.get('/estabelecimentos', async(req, res) => {
 app.post('/criaEstabelecimento', async(req, res) =>{
     const {
         nome,
+        descricao,
         long,
         lat
     } = req.body
 
     const estabelecimento = {
         nome,
+        descricao,
         long,
         lat
     }
@@ -169,6 +171,26 @@ app.post('/criaEstabelecimento', async(req, res) =>{
     }catch(error){
         res.status(500).json({error: error})
     }
+})
+
+app.get("/estabelecimentos/:id/eventos" , async(req, res)=>{
+    
+    const estaId =req.params.id
+    try {
+        const local = await Estabelecimento.findById(estaId)
+        console.log(local.eventos)
+        let eventos = []
+        for (let i = 0; i < local.eventos.length; i++){
+            let evento = await Evento.findById(local.eventos[i])
+            console.log(evento)
+            eventos.push(evento)
+        }
+        console.log(eventos)
+        res.send(201, eventos)
+    } catch (error) {
+        res.json(error)
+    }
+
 })
 
 app.patch("/estabelecimentos/:id/eventos" ,async (req,res)=>{
