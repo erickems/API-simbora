@@ -34,6 +34,8 @@ app.get('/clientes', async(req, res) => {
 
 app.post('/criaCliente', async(req, res) =>{
 
+    eventos = []
+
     let {
         nome,
         email,
@@ -64,7 +66,8 @@ app.post('/criaCliente', async(req, res) =>{
     const cliente = new Cliente({
         nome,
         email,
-        hash
+        hash,
+        eventos
     })
 
     try {
@@ -227,4 +230,42 @@ app.get("/eventos/:id", async(req , res)=>{
     }
     })
 
+app.patch('/teste/:email/:id_evento', async(req, res)=>{
+
+    let email_novo = req.body
+
+    try{
+        //pega o cliente
+        const email = req.params.email;
+        let cliente = await Cliente.find({email:email});
+
+        //id do cliente
+        cliente_id = cliente[0]['_id'].toString()
+
+        //pega os eventos do estabelecimento
+        const id_evento = req.params.id_evento
+        let evento = await Evento.findById(id_evento)
+        let interessados = evento.interessados
+
+        //coloca o id do cliente na lista de interessados
+        interessados.push(cliente_id) 
+
+        let update = {interessados: interessados}
+
+        //faz o update no evento
+        let doc = await Evento.findOneAndUpdate(id_evento, update)
+        res.status(201).json(doc)
+
+        //faz o update na lista de eventos de interesse em cliente
+        let interessado = cliente[0]['evento_interesse']
+        interessado.push(cliente_id)
+
+        update = {evento_interesse: interessado}
+        await Cliente.findOneAndUpdate({_id: cliente[0]['_id']}, update);
+
+    }catch(error){
+        res.status(500).json({error: error})
+    }
+    
+})
 module.exports = app
