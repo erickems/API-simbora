@@ -113,7 +113,7 @@ app.post('/login', async(req, res) => {
   }
 })
   
-app.get("/cliente/:id", checkToken, async (req, res) => {
+app.get("/cliente/:id", checkToken, async (req, res) => { 
     const id = req.params.id;
     
     //não exibe a senha, apenas nome e email
@@ -135,9 +135,19 @@ app.get("/cliente/:id", checkToken, async (req, res) => {
     try {
       const secret = "HIOAHDIHOIhOHihasd0901jaa";
   
-      jwt.verify(token, secret);
+    //   jwt.verify(token, secret);
+      jwt.verify(token, secret, function(err, decoded) {
+        if (err) return res.status(500).json({ auth: false, message: 'Falha para autenticar o token.' });
+        
+        // se tudo estiver ok, salva no request para uso posterior
+        req.userId = decoded.id;
+        console.log(req.userId)
+
+        next();
+
+      });
   
-      next();
+    //   next();
     } catch (err) {
       res.status(400).json({ msg: "O Token é inválido!" });
     }
@@ -252,38 +262,50 @@ app.get("/eventos/:id", async(req , res)=>{
     }
     })
 
-app.patch('/teste/:email/:id_evento', async(req, res)=>{
+app.get("eventos/verifyUser/:idEvento" , checkToken , async(req, res)=>{
 
-    let email_novo = req.body
+    let userId = req.userId
+    console.lo("checa evento")
+    const evento = await Evento.findById(req.params.idEvento)
+
+    if (!evento) {
+        return res.status(404).json({ msg: "Evento não encontrado!" });
+      }
+    
+    if(evento.interessados.indexOf(userId) != -1){
+        res.status(200);
+    }else{
+        res.status(404);
+    }
+})
+
+app.patch('/teste/:id_evento', checkToken,async(req, res )=>{
+
 
     try{
-        //pega o cliente
-        const email = req.params.email;
-        let cliente = await Cliente.find({email:email});
 
-        //id do cliente
-        cliente_id = cliente[0]['_id'].toString()
+        let cliente = await Cliente.findById(req.userId)
+        console.log(cliente)
 
-        //pega os eventos do estabelecimento
         const id_evento = req.params.id_evento
         let evento = await Evento.findById(id_evento)
-        let interessados = evento.interessados
-
+        let interessadosN = evento.interessados
+        console.log(id_evento)
+        console.log(evento)
         //coloca o id do cliente na lista de interessados
-        interessados.push(cliente_id) 
-
-        let update = {interessados: interessados}
+        interessadosN.push(req.userId) 
+        let update = {interessados: interessadosN}
 
         //faz o update no evento
-        let doc = await Evento.findOneAndUpdate(id_evento, update)
-        res.status(201).json(doc)
-
+        let doc = await Evento.findOneAndUpdate({_id : id_evento}, update)
+        console.log(doc)
         //faz o update na lista de eventos de interesse em cliente
-        let interessado = cliente[0]['evento_interesse']
-        interessado.push(cliente_id)
+        let interessado = cliente['evento_interesse']
+        interessado.push(id_evento)
 
         update = {evento_interesse: interessado}
-        await Cliente.findOneAndUpdate({_id: cliente[0]['_id']}, update);
+        await Cliente.findOneAndUpdate(req.userId, update);
+        res.status(201).json(doc)
 
     }catch(error){
         res.status(500).json({error: error})
