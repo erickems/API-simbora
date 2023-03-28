@@ -290,4 +290,17 @@ app.patch('/teste/:email/:id_evento', async(req, res)=>{
     }
     
 })
+
+app.get("/estabelecimento/:tipo", async(req , res)=>{
+
+    const tipo = req.params.tipo
+
+    try{
+        const estabelecimentos = await Estabelecimento.find({ tipo_estabelecimento: tipo })
+
+        res.status(200).json(estabelecimentos)
+    } catch(error){
+        res.status(500).json({error: error})
+    }
+})
 module.exports = app

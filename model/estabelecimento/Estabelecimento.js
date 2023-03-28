@@ -6,7 +6,8 @@ const estabelecimentoSchema = new mongoose.Schema({
   descricao : {type: String,required : true},
   lat: { type: Number, required: true },
   long: { type: Number, required: true },
-  eventos : [String]
+  eventos : [String],
+  tipo_estabelecimento: {type: String}
   })
 
 module.exports = mongoose.model('Estabelecimento', estabelecimentoSchema)
