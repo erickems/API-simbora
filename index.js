@@ -322,9 +322,10 @@ app.patch('/eventos/sub/:id_evento', checkToken, async (req, res) => {
 
 })
 
-app.get("/estabelecimento/:tipo", async(req , res)=>{
+app.get("/estabelecimentos/:tipo", async(req , res)=>{
 
-    const tipo = req.params.tipo
+    const tipo = req.params.tipo.toLowerCase()
+    console.log(req)
 
     try{
         const estabelecimentos = await Estabelecimento.find({ tipo_estabelecimento: tipo })
