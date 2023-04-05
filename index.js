@@ -8,6 +8,9 @@ const jwt = require("jsonwebtoken");
 
 const port = process.env.PORT || 5010
 
+const secret = "HIOAHDIHOIhOHihasd0901jaa";
+
+
 app.listen(port, () => {
     console.log(`API funfando na porta ${port}`)
 })
@@ -133,7 +136,6 @@ function checkToken(req, res, next) {
     if (!token) return res.status(401).json({ msg: "Acesso negado!" });
 
     try {
-        const secret = "HIOAHDIHOIhOHihasd0901jaa";
 
         //   jwt.verify(token, secret);
         jwt.verify(token, secret, function (err, decoded) {
@@ -154,6 +156,12 @@ function checkToken(req, res, next) {
     }
 }
 
+// function getUerIdFromToken(token){
+//     const authHeader = req.headers["authorization"];
+//     const token = authHeader && authHeader.split(" ")[1];
+
+// }
+
 app.get('/estabelecimentos', async (req, res) => {
     try {
         const estabelecimento = await Estabelecimento.find()
@@ -163,6 +171,21 @@ app.get('/estabelecimentos', async (req, res) => {
         res.status(500).json({ error: error })
     }
 })
+
+app.get('/estabelecimentos/:id', async (req, res) => {
+
+    try {
+        const estabelecimento = await Estabelecimento.findById(req.params.id)
+        console.log("pega o estabelecimento ")
+        
+        res.status(200).json(estabelecimento)
+
+    } catch (error) {
+        res.status(500).json({ error: error })
+    }
+})
+
+
 
 app.post('/criaEstabelecimento', async (req, res) => {
     const {
@@ -197,15 +220,21 @@ app.get("/estabelecimentos/:id/eventos", async (req, res) => {
 
     const estaId = req.params.id
     try {
+
         const local = await Estabelecimento.findById(estaId)
-        // console.log(local.eventos)
+        //console.log(local.eventos)
         let eventos = []
         for (let i = 0; i < local.eventos.length; i++) {
-            let evento = await Evento.findById(local.eventos[i])
-            // console.log(evento)
-            eventos.push(evento)
+            try{
+                let evento = await Evento.findById(local.eventos[i])
+                eventos.push(evento)
+
+            }
+            catch (error){
+                console.log(error)
+            }
         }
-        // console.log(eventos)
+        console.log(eventos)
         res.send(201, eventos)
     } catch (error) {
         res.json(error)
@@ -266,6 +295,7 @@ app.get("/eventos/:id", async (req, res) => {
     // console.log("--",req.params)
     try {
         const evento = await Evento.findById(req.params.id)
+        
         res.json(evento)
     } catch (error) {
         console.log(error)
@@ -330,17 +360,44 @@ app.patch('/eventos/sub/:id_evento', checkToken, async (req, res) => {
 
 })
 
-app.get("/estabelecimentos/:tipo", async(req , res)=>{
+app.get("/estabelecimentos/filtrar/:tipo", async(req , res)=>{
 
     const tipo = req.params.tipo.toLowerCase()
-    console.log(req)
-
+    console.log("procurando estabelecimento : " + tipo)
     try{
         const estabelecimentos = await Estabelecimento.find({ tipo_estabelecimento: tipo })
 
         res.status(200).json(estabelecimentos)
     } catch(error){
-        res.status(500).json({error: error})
+        
+        res.status(200).json([])
     }
 })
+
+app.patch("/estabelecimento/:id/comentario", checkToken , async(req , res)=>{
+
+    const userId = req.userId
+    console.log(userId)
+    console.log(req.body)
+
+    const estabelecimentoId = req.params.id
+
+    try{
+        const estabelecimento = await Estabelecimento.findById(estabelecimentoId)
+        const user  = await Cliente.findById(userId)
+        let coment = estabelecimento.comentarios
+        coment.push({nome : user.nome ,
+            comentario : req.body.comment})
+        // console.log(coment)
+        await Estabelecimento.findOneAndUpdate({ _id : estabelecimentoId} , {comentarios : coment})
+        // console.log(estabelecimento)
+        res.status(200);
+    }catch(error){
+        console.log(error)
+        res.status(500).json({error: error});
+    }
+
+})
+
+
 module.exports = app
