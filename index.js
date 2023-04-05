@@ -169,14 +169,20 @@ app.post('/criaEstabelecimento', async (req, res) => {
         nome,
         descricao,
         long,
-        lat
+        lat,
+        eventos,
+        tipos_estabelecimentos,
+        comentarios
     } = req.body
 
     const estabelecimento = {
         nome,
         descricao,
         long,
-        lat
+        lat,
+        eventos,
+        tipos_estabelecimentos,
+        comentarios
     }
 
     try {
@@ -234,13 +240,15 @@ app.post('/eventos', async (req, res) => {
     const { nome,
         horario,
         promocoes,
-        atracoes } = req.body
+        atracoes,
+        interessados } = req.body
 
     const evento = {
         nome,
         horario,
         promocoes,
-        atracoes
+        atracoes,
+        interessados
     }
 
     try {
