@@ -363,14 +363,17 @@ app.patch('/eventos/sub/:id_evento', checkToken, async (req, res) => {
 app.get("/estabelecimentos/filtrar/:tipo", async(req , res)=>{
 
     const tipo = req.params.tipo.toLowerCase()
-    console.log("procurando estabelecimento : " + tipo)
-    try{
-        const estabelecimentos = await Estabelecimento.find({ tipo_estabelecimento: tipo })
-
-        res.status(200).json(estabelecimentos)
-    } catch(error){
-        
-        res.status(200).json([])
+    if(tipo == ' '){
+        res.status(400).json({"msg": "Filtro vazio"})
+    } else{
+        try{
+            const estabelecimentos = await Estabelecimento.find({ tipo_estabelecimento: tipo })
+    
+            res.status(200).json(estabelecimentos)
+        } catch(error){
+            
+            res.status(200).json([])
+        }
     }
 })
 
