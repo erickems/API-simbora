@@ -224,18 +224,9 @@ app.get("/estabelecimentos/:id/eventos", async (req, res) => {
         const local = await Estabelecimento.findById(estaId)
         //console.log(local.eventos)
         let eventos = []
-        for (let i = 0; i < local.eventos.length; i++) {
-            try{
-                let evento = await Evento.findById(local.eventos[i])
-                eventos.push(evento)
-
-            }
-            catch (error){
-                console.log(error)
-            }
-        }
+        eventos = await getEventos(local.eventos)
         console.log(eventos)
-        res.send(201, eventos)
+        res.status(201).send(eventos)
     } catch (error) {
         res.json(error)
     }
@@ -326,17 +317,20 @@ app.get("/eventos/verifyuser/:idEvento", checkToken, async (req, res) => {
     }
 })
 
-// app.get("/eventos/user", async (req, res) => {
+app.get("/eventos/retrive/user",checkToken, async (req, res) => {
 
-//     // let userId = req.userId
-//     // console.log(userId)
-//     // let user = await Cliente.findById(userId)
-//     // console.log(user)
-//     // let eventos = user['evento_interesse']
-//     res.status(200)
-//     // res.status(200).json(eventos)
+    let userId = req.userId
+    // console.log(userId)
+    let user = await Cliente.findById(userId)
+    console.log(user)
+    let eventsId = user['evento_interesse']
+    console.log(eventsId)
+    let eventos = await getEventos(eventsId)
+    // res.status(200)
 
-// })
+    res.status(200).json(eventos)
+
+})
 
 
 app.patch('/eventos/sub/:id_evento', checkToken, async (req, res) => {
@@ -414,6 +408,24 @@ app.patch("/estabelecimento/:id/comentario", checkToken , async(req , res)=>{
     }
 
 })
+
+
+async function getEventos(eventos){
+    let saida = []
+    for (let i = 0; i < eventos.length; i++) {
+        try{
+            let evento = await Evento.findById(eventos[i])
+            console.log(evento)
+            saida.push(evento)
+
+        }
+        catch (error){
+            console.log(error)
+        }
+    }
+
+    return saida
+}
 
 
 module.exports = app
