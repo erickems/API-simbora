@@ -132,7 +132,7 @@ app.get("/cliente/:id", checkToken, async (req, res) => {
 function checkToken(req, res, next) {
     const authHeader = req.headers["authorization"];
     const token = authHeader && authHeader.split(" ")[1];
-
+    console.log(token)
     if (!token) return res.status(401).json({ msg: "Acesso negado!" });
 
     try {
@@ -325,6 +325,19 @@ app.get("/eventos/verifyuser/:idEvento", checkToken, async (req, res) => {
         res.status(404).end();
     }
 })
+
+// app.get("/eventos/user", async (req, res) => {
+
+//     // let userId = req.userId
+//     // console.log(userId)
+//     // let user = await Cliente.findById(userId)
+//     // console.log(user)
+//     // let eventos = user['evento_interesse']
+//     res.status(200)
+//     // res.status(200).json(eventos)
+
+// })
+
 
 app.patch('/eventos/sub/:id_evento', checkToken, async (req, res) => {
 
